@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pawar AI</title>
+    <!-- Favicon as Letter A -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232563eb'/%3E%3Ctext x='50%' y='50%' font-family='Arial, sans-serif' font-size='65' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'%3EA%3C/text%3E%3C/svg%3E">
+    
+    <meta name="theme-color" content="#020617">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pawar AI">
+
+    <!-- EMERGENCY SAFEGUARD CSS -->
+    <style>
+        html, body { margin: 0; padding: 0; width: 100vw; overflow-x: hidden; font-family: sans-serif; }
+        html.dark body { background-color: #020617; color: #f8fafc; }
+        html:not(.dark) body { background-color: #ffffff; color: #0f172a; }
+        .hidden { display: none !important; }
+        #network-error { display: none; background: #ef4444; color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 14px; }
+    </style>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com/3.4.4" onerror="document.getElementById('network-error').style.display='block'"></script>
+    <script>
+      if(window.tailwind) {
+          tailwind.config = {
+            darkMode: 'class',
+            theme: {
+              extend: {
+                fontFamily: { sans:['Inter', 'sans-serif'] },
+                colors: { gemini: { 500: '#3b82f6', 600: '#2563eb' } }
+              },
+            },
+          }
+      }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest"></script>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+      .markdown-content { font-size: 15px; line-height: 1.6; color: #334155; word-wrap: break-word; }
+      @media (min-width: 768px) { .markdown-content { font-size: 16px; line-height: 1.7; } }
+      .dark .markdown-content { color: #cbd5e1; }
+      
+      .markdown-content h1, .markdown-content h2, .markdown-content h3, .markdown-content h4 { color: #0f172a; margin-top: 1.2em; margin-bottom: 0.5em; font-weight: 700; }
+      .dark .markdown-content h1, .dark .markdown-content h2, .dark .markdown-content h3, .dark .markdown-content h4 { color: #f8fafc; }
+      
+      .markdown-content h1 { font-size: 1.75em; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.3em; }
+      .dark .markdown-content h1 { border-bottom-color: #334155; }
+      .markdown-content h2 { font-size: 1.4em; }
+      .markdown-content h3 { font-size: 1.2em; }
+      
+      .markdown-content p { margin-bottom: 1em; }
+      .markdown-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1em 0; }
+      .markdown-content pre { overflow-x: auto; max-width: 100%; padding: 1rem; background: #1e293b; color: #f8fafc; border-radius: 0.5rem; margin: 1rem 0; font-size: 0.875em; }
+      .markdown-content code { word-break: break-word; }
+      
+      .markdown-content strong, .markdown-content b { font-weight: 700; color: #000; }
+      .dark .markdown-content strong, .dark .markdown-content b { color: #fff; }
+      
+      .markdown-content ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
+      .markdown-content ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
+      .markdown-content li { margin-bottom: 0.5em; display: list-item; }
+      .markdown-content li > p { margin-bottom: 0; display: inline; }
+      
+      .markdown-content table { display: block; overflow-x: auto; width: 100%; border-collapse: collapse; margin-top: 1em; margin-bottom: 1.5em; font-size: 14px; white-space: nowrap; }
+      .markdown-content th, .markdown-content td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+      @media (min-width: 768px) { .markdown-content table { display: table; white-space: normal; } }
+      .dark .markdown-content th, .dark .markdown-content td { border-color: #475569; }
+      .markdown-content th { background-color: #f1f5f9; font-weight: bold; color: #0f172a; }
+      .dark .markdown-content th { background-color: #1e293b; color: #f8fafc; }
+      
+      .typing-cursor::after { content: '▋'; color: #3b82f6; animation: blink 1s infinite; margin-left: 2px; }
+      @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      
+      select, input.custom-select {
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+          background-position: right 0.75rem center;
+          background-repeat: no-repeat;
+          background-size: 1.25em 1.25em;
+          padding-right: 2.5rem;
+      }
+
+      #chat-scroll-area .markdown-content { color: #e2e8f0; font-size: 15px; }
+      #chat-scroll-area .markdown-content h1,
+      #chat-scroll-area .markdown-content h2,
+      #chat-scroll-area .markdown-content h3 { color: #f8fafc; border-bottom-color: #334155; }
+      #chat-scroll-area .markdown-content strong,
+      #chat-scroll-area .markdown-content b { color: #fff; }
+      #chat-scroll-area .markdown-content th { background:#1e293b; color:#f8fafc; }
+      #chat-scroll-area .markdown-content td,
+      #chat-scroll-area .markdown-content th { border-color: #475569; }
+
+      @media print {
+          body > header, body > footer, .no-print { display: none !important; }
+          body, html, main, #app-container { background-color: white !important; color: black !important; margin: 0 !important; padding: 0 !important; height: auto !important; }
+          #notes-print-area { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
+          .markdown-content * { color: black !important; }
+          .markdown-content strong, .markdown-content b, .markdown-content h1, .markdown-content h2, .markdown-content h3, .markdown-content h4 { color: #000 !important; }
+          table { border-collapse: collapse !important; width: 100% !important; page-break-inside: avoid; }
+          th, td { border: 1px solid #ccc !important; padding: 8px !important; }
+          th { background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
+    </style>
+</head>
+<body class="bg-white text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col relative w-full overflow-x-hidden">
+    
+    <div id="network-error">
+        ⚠️ Styling server (CDN) is blocked by your network or Ad-blocker. Please switch Wi-Fi or turn off Ad-blockers.
+    </div>
+
+    <header id="main-header" class="bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 no-print transition-all w-full">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between min-w-0">
+            <!-- Custom Letter 'A' Logo -->
+            <div class="flex items-center gap-3 cursor-pointer min-w-0 shrink-0" onclick="if(state.user) app.showView('HOME')">
+                <div class="w-8 h-8 md:w-9 md:h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-sm shrink-0">A</div>
+                <span class="font-bold text-lg md:text-xl tracking-tight hidden sm:block truncate">Pawar AI</span>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                <button onclick="app.toggleDarkMode()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i data-lucide="moon" id="theme-icon-moon" class="w-5 h-5 text-slate-600 dark:text-slate-400"></i>
+                    <i data-lucide="sun" id="theme-icon-sun" class="w-5 h-5 hidden text-slate-400"></i>
+                </button>
+
+                <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+                <div id="auth-container" class="relative flex items-center gap-2">
+                    <div id="user-profile" class="hidden items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-1 pl-1 pr-3 rounded-full shadow-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onclick="app.toggleProfileDropdown(event)">
+                        <img id="user-avatar" src="" alt="Profile" class="w-7 h-7 md:w-8 md:h-8 rounded-full border border-slate-200 dark:border-slate-700 pointer-events-none shrink-0" style="width:28px; height:28px;">
+                        <span id="user-name" class="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 hidden sm:block pointer-events-none max-w-[80px] truncate"></span>
+                    </div>
+
+                    <div id="profile-dropdown" class="hidden absolute top-full right-0 mt-3 w-56 md:w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 p-4 flex-col">
+                        <div class="flex items-center gap-3 mb-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                            <img id="dropdown-avatar" src="" class="w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-200 dark:border-slate-700 shrink-0">
+                            <div class="overflow-hidden min-w-0">
+                                <h4 id="dropdown-name" class="font-bold text-sm md:text-base text-slate-900 dark:text-white truncate"></h4>
+                                <p id="dropdown-email" class="text-[10px] md:text-xs text-slate-500 truncate"></p>
+                            </div>
+                        </div>
+                        <button onclick="app.actions.logout()" class="w-full flex items-center justify-center gap-2 py-2 md:py-2.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-sm md:text-base rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors">
+                            <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="app-container" class="flex-grow w-full flex flex-col min-w-0"></main>
+
+    <footer id="main-footer" class="border-t border-slate-200 dark:border-slate-800 py-6 mt-auto text-center text-slate-400 text-xs no-print transition-all w-full">
+        <p>&copy; <span id="year"></span> Pawar AI College Project</p>
+    </footer>
+
+    <script>
+        const state = {
+            currentView: 'HOME',
+            darkMode: localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : true, 
+            user: JSON.parse(localStorage.getItem('pawar_user')) || null, 
+            ui: { profileOpen: false, sidebarOpen: false },
+            
+            chat: { sessions:[], currentId: null, loading: false, isTyping: false, attachedFile: null },
+            notes: { topic: '', content: '', loading: false, isTyping: false, history:[] },
+            quiz: { phase: 'config', questions:[], current: 0, score: 0, answers:[] },
+            
+            searchHistory: { notes:[], quiz: [] }
+        };
+
+        window.addEventListener('click', (e) => {
+            const userProfile = document.getElementById('user-profile');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (state.ui.profileOpen && userProfile && profileDropdown) {
+                if (!userProfile.contains(e.target) && !profileDropdown.contains(e.target)) {
+                    state.ui.profileOpen = false;
+                    app.renderAuth();
+                }
+            }
+        });
+
+        const app = {
+            init() {
+                if(state.darkMode) document.documentElement.classList.add('dark');
+                
+                this.applyTheme();
+                this.loadData(); 
+                history.replaceState({ view: 'HOME' }, '', '#home');
+                this.render();
+                document.getElementById('year').textContent = new Date().getFullYear();
+                
+                if(typeof lucide !== 'undefined') lucide.createIcons();
+
+                window.addEventListener('popstate', (e) => {
+                    const view = e.state && e.state.view ? e.state.view : 'HOME';
+                    state.currentView = view;
+                    app.render();
+                });
+            },
+
+            getStorageKey(key) { return key + '_' + (state.user ? state.user.email : 'guest'); },
+
+            async loadData() {
+                if (!state.user) {
+                    state.chat.sessions =[]; state.notes.history =[]; return;
+                }
+                const localChats = JSON.parse(localStorage.getItem(this.getStorageKey('pawar_chats'))) ||[];
+                const localNotes = JSON.parse(localStorage.getItem(this.getStorageKey('pawar_notes'))) ||[];
+
+                state.chat.sessions = localChats;
+                state.notes.history = localNotes;
+                
+                if (state.chat.sessions.length === 0) this.actions.newChat(false);
+                else state.chat.currentId = state.chat.sessions[0].id;
+                
+                // Keep cloud sync for saving work if backend exists
+                try {
+                    const res = await fetch('sync.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'load', email: state.user.email })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        state.chat.sessions = data.chats && data.chats.length ? data.chats : state.chat.sessions;
+                        state.notes.history = data.notes || state.notes.history;
+                        
+                        if (state.chat.sessions.length === 0) this.actions.newChat(false);
+                        else state.chat.currentId = state.chat.sessions[0].id;
+                        
+                        localStorage.setItem(this.getStorageKey('pawar_chats'), JSON.stringify(state.chat.sessions));
+                        localStorage.setItem(this.getStorageKey('pawar_notes'), JSON.stringify(state.notes.history));
+                    }
+                } catch(e) { console.warn('Cloud sync unavailable - Using local storage only.'); }
+            },
+
+            saveData() {
+                if (!state.user) return;
+                localStorage.setItem(this.getStorageKey('pawar_chats'), JSON.stringify(state.chat.sessions));
+                localStorage.setItem(this.getStorageKey('pawar_notes'), JSON.stringify(state.notes.history));
+                
+                fetch('sync.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save', email: state.user.email, name: state.user.name,
+                        chats: state.chat.sessions, notes: state.notes.history
+                    })
+                }).catch(e => console.warn('Cloud save failed. Data saved locally.'));
+            },
+
+            renderAuth() {
+                const profileDiv = document.getElementById('user-profile');
+                const dropdownDiv = document.getElementById('profile-dropdown');
+                
+                if (state.user) {
+                    if (profileDiv) profileDiv.style.display = 'flex';
+                    if (document.getElementById('user-avatar')) {
+                        document.getElementById('user-avatar').src = state.user.picture;
+                        document.getElementById('user-name').textContent = state.user.name.split(' ')[0];
+                        document.getElementById('dropdown-avatar').src = state.user.picture;
+                        document.getElementById('dropdown-name').textContent = state.user.name;
+                        document.getElementById('dropdown-email').textContent = state.user.email;
+                    }
+                    if(dropdownDiv) {
+                        if(state.ui.profileOpen) {
+                            dropdownDiv.classList.remove('hidden'); dropdownDiv.classList.add('flex');
+                        } else {
+                            dropdownDiv.classList.add('hidden'); dropdownDiv.classList.remove('flex');
+                        }
+                    }
+                } else {
+                    if (profileDiv) profileDiv.style.display = 'none';
+                    if (dropdownDiv) { dropdownDiv.classList.add('hidden'); dropdownDiv.classList.remove('flex'); }
+                }
+                if(typeof lucide !== 'undefined') lucide.createIcons();
+            },
+
+            toggleProfileDropdown(e) {
+                e.stopPropagation();
+                state.ui.profileOpen = !state.ui.profileOpen;
+                this.renderAuth();
+            },
+
+            async callBackend(prompt) {
+                return this.callBackendChat([{ role: 'user', parts: [{ text: prompt }] }]);
+            },
+
+            async callBackendChat(messages) {
+                try {
+                    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+                    const promptText = lastUserMsg ? lastUserMsg.parts[0].text : '';
+                    const response = await fetch('api.php', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messages: messages, prompt: promptText })
+                    });
+                    const textResponse = await response.text();
+                    let data;
+                    try {
+                        const jsonStart = textResponse.indexOf('{');
+                        const jsonEnd = textResponse.lastIndexOf('}') + 1;
+                        if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON found");
+                        data = JSON.parse(textResponse.substring(jsonStart, jsonEnd));
+                    } catch (e) { return "Server Error: Could not parse response."; }
+                    if (data.candidates && data.candidates[0].content) return data.candidates[0].content.parts[0].text;
+                    else if (data.error && data.error.message) return "Google Error: " + data.error.message;
+                    else return "Unknown Error: " + JSON.stringify(data);
+                } catch (error) { return "Connection Failed: " + error.message; }
+            },
+
+            applyTheme() {
+                if (state.darkMode) {
+                    document.documentElement.classList.add('dark');
+                    const m = document.getElementById('theme-icon-moon');
+                    const s = document.getElementById('theme-icon-sun');
+                    if(m) m.classList.add('hidden');
+                    if(s) s.classList.remove('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    const m = document.getElementById('theme-icon-moon');
+                    const s = document.getElementById('theme-icon-sun');
+                    if(m) m.classList.remove('hidden');
+                    if(s) s.classList.add('hidden');
+                }
+                this.renderAuth(); 
+            },
+
+            toggleDarkMode() {
+                state.darkMode = !state.darkMode;
+                localStorage.setItem('theme', state.darkMode ? 'dark' : 'light');
+                this.applyTheme();
+            },
+
+            showView(view) {
+                if (view !== state.currentView) {
+                    history.pushState({ view }, '', '#' + view.toLowerCase());
+                }
+                state.currentView = view;
+                this.render();
+            },
+
+            render() {
+                const container = document.getElementById('app-container');
+                const mainHeader = document.getElementById('main-header');
+                const mainFooter = document.getElementById('main-footer');
+
+                const isFullScreenView = (!state.user || state.currentView === 'CHAT');
+                
+                if (isFullScreenView) {
+                    document.body.classList.add('h-screen', 'overflow-hidden');
+                    document.body.classList.remove('min-h-screen');
+                } else {
+                    document.body.classList.remove('h-screen', 'overflow-hidden');
+                    document.body.classList.add('min-h-screen');
+                }
+
+                if (mainHeader) mainHeader.style.display = isFullScreenView ? 'none' : 'block';
+                if (mainFooter) mainFooter.style.display = isFullScreenView ? 'none' : 'block';
+
+                container.innerHTML = '';
+
+                try {
+                    if (!state.user) container.innerHTML = this.templates.login();
+                    else if (state.currentView === 'HOME') container.innerHTML = this.templates.home();
+                    else if (state.currentView === 'CHAT') {
+                        container.innerHTML = this.templates.chat();
+                        this.scrollToBottom('chat-scroll-area');
+                    }
+                    else if (state.currentView === 'NOTES') container.innerHTML = this.templates.notes();
+                    else if (state.currentView === 'TEST') container.innerHTML = this.templates.quiz();
+                } catch(e) {
+                    console.error('Render error:', e);
+                    container.innerHTML = '<div class="p-8 text-center text-red-500 min-w-0">Page error. <button onclick="app.showView(\'HOME\')" class="underline">Go Home</button></div>';
+                }
+                
+                if(typeof lucide !== 'undefined') lucide.createIcons();
+                this.renderAuth();
+            },
+
+            templates: {
+                login() {
+                    return `
+                        <div class="fixed inset-0 z-50 flex flex-col items-center justify-end md:justify-center overflow-hidden pb-8 md:pb-0 w-full bg-[#020617]">
+                            <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 24px 24px;"></div>
+                            
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-80 md:h-80 bg-indigo-600/20 blur-[80px] md:blur-[100px] rounded-full pointer-events-none"></div>
+
+                            <div class="relative z-10 w-full max-w-md bg-transparent p-6 sm:p-8 flex flex-col items-center animate-in slide-in-from-bottom-8 fade-in duration-700">
+                                
+                                <!-- Large A Logo -->
+                                <div class="w-24 h-24 sm:w-28 sm:h-28 bg-blue-600 rounded-3xl flex items-center justify-center text-white font-black text-6xl shadow-2xl shadow-blue-500/20 border border-white/10 mb-6 shrink-0">A</div>
+                                
+                                <h1 class="text-4xl sm:text-[48px] font-black text-white tracking-tight leading-none mb-3 text-center">
+                                    Pawar AI
+                                </h1>
+                                <p class="font-mono text-indigo-400 text-xs sm:text-sm tracking-widest mb-10 text-center uppercase">
+                                    College Project
+                                </p>
+
+                                <div class="w-full space-y-4">
+                                    <input type="text" id="demo-username" placeholder="Username (e.g. Student)" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all font-medium">
+                                    <input type="password" id="demo-password" placeholder="Password (any password works)" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white/10 transition-all font-medium" onkeypress="if(event.key==='Enter') app.actions.simpleLogin()">
+                                    <button class="w-full py-4 px-6 mt-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-xl hover:shadow-indigo-500/20 text-[15px]" onclick="app.actions.simpleLogin()">
+                                        Login to App
+                                    </button>
+                                </div>
+                                
+                                <p class="text-[11px] text-slate-500 mt-6 font-medium tracking-wide text-center">Enter any username and password to test</p>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                home() {
+                    const greeting = state.user ? `Welcome back, ${state.user.name.split(' ')[0]} 👋` : 'Welcome to Pawar AI 👋';
+                    
+                    return `
+                        <div class="w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-12 animate-in fade-in duration-500 flex-1 min-w-0">
+                            <div class="mb-8 md:mb-10 text-center md:text-left">
+                                <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-2 sm:mb-4 pb-1 md:pb-2 tracking-tight">${greeting}</h1>
+                                <p class="text-lg sm:text-xl text-slate-500 dark:text-slate-400 font-medium">What would you like to learn today?</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 min-w-0">
+                                
+                                <button onclick="app.showView('CHAT')" class="bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm text-left hover:shadow-xl hover:border-blue-300 transition-all group relative overflow-hidden">
+                                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mb-4 sm:mb-6 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform shrink-0"><i data-lucide="message-square"></i></div>
+                                    <h2 class="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 text-slate-900 dark:text-white">AI Chat</h2>
+                                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Ask questions, get instant detailed answers.</p>
+                                </button>
+
+                                <button onclick="app.showView('NOTES')" class="bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm text-left hover:shadow-xl hover:border-purple-300 transition-all group relative overflow-hidden">
+                                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mb-4 sm:mb-6 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform shrink-0"><i data-lucide="file-text"></i></div>
+                                    <h2 class="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 text-slate-900 dark:text-white">Note Maker</h2>
+                                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Generate structured study notes and tables instantly.</p>
+                                </button>
+
+                                <button onclick="app.showView('TEST')" class="bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm text-left hover:shadow-xl hover:border-rose-300 transition-all group relative overflow-hidden">
+                                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-rose-100 dark:bg-rose-900/30 rounded-2xl flex items-center justify-center mb-4 sm:mb-6 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform shrink-0"><i data-lucide="check-circle"></i></div>
+                                    <h2 class="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 text-slate-900 dark:text-white">Mock Tests</h2>
+                                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Test your knowledge with custom AI quizzes.</p>
+                                </button>
+
+                            </div>
+                        </div>
+                    `;
+                },
+
+                chat() {
+                    const currentSession = state.chat.sessions.find(s => s.id === state.chat.currentId);
+                    const messages = currentSession ? currentSession.messages : [];
+                    const chatGreeting = state.user ? `Hello, ${state.user.name.split(' ')[0]}` : `Hello, Student`;
+                    const attachedFile = state.chat.attachedFile;
+
+                    const sidebarHtml = `
+                        <div class="${state.ui.sidebarOpen ? 'flex absolute inset-y-0 left-0 z-40 shadow-2xl w-64 sm:w-72' : 'hidden md:flex md:relative md:w-64 lg:w-72'} flex-col bg-slate-950 border-r border-slate-800 h-full flex-shrink-0 min-w-0">
+                            <!-- Sidebar Header -->
+                            <div class="flex items-center justify-between p-4 border-b border-slate-800 shrink-0">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <!-- A Logo in Sidebar -->
+                                    <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0 shadow">A</div>
+                                    <span class="font-bold text-white text-sm truncate">Pawar AI</span>
+                                </div>
+                                <button onclick="state.ui.sidebarOpen=false; app.render()" class="md:hidden p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 shrink-0">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <!-- New Chat -->
+                            <div class="p-3 shrink-0">
+                                <button onclick="app.actions.newChat(true)" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-semibold text-sm transition-colors border border-slate-700">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i> New Chat
+                                </button>
+                            </div>
+                            <!-- History list -->
+                            <div class="flex-1 overflow-y-auto px-3 pb-4 space-y-1 min-w-0">
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 py-2">Recent Chats</p>
+                                ${state.chat.sessions.length === 0 ? `<p class="text-xs text-slate-600 px-2">No chats yet</p>` : ''}
+                                ${state.chat.sessions.map(s => `
+                                    <div class="group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors min-w-0 ${s.id === state.chat.currentId ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300' : 'hover:bg-slate-800 text-slate-400'}">
+                                        <button onclick="app.actions.switchChat('${s.id}')" class="flex-1 text-left text-sm font-medium truncate pr-2 min-w-0">${s.title}</button>
+                                        <button onclick="app.actions.deleteChat('${s.id}')" class="flex-shrink-0 opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:text-rose-400 transition-all">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <!-- User info at bottom -->
+                            ${state.user ? `
+                            <div class="p-3 border-t border-slate-800 shrink-0 min-w-0">
+                                <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 cursor-pointer transition-colors min-w-0">
+                                    <img src="${state.user.picture}" class="w-8 h-8 rounded-full flex-shrink-0">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-semibold text-slate-200 truncate">${state.user.name}</p>
+                                        <p class="text-[10px] sm:text-[11px] text-slate-500 truncate">${state.user.email}</p>
+                                    </div>
+                                </div>
+                            </div>` : ''}
+                        </div>
+                        ${state.ui.sidebarOpen ? `<div class="md:hidden absolute inset-0 bg-black/60 backdrop-blur-sm z-30" onclick="state.ui.sidebarOpen=false; app.render()"></div>` : ''}
+                    `;
+
+                    return `
+                        <div class="absolute inset-0 flex w-full bg-slate-950 overflow-hidden">
+                            ${sidebarHtml}
+
+                            <!-- Main chat area -->
+                            <div class="flex-1 flex flex-col h-full min-w-0">
+
+                                <!-- Top bar -->
+                                <div class="flex-none flex items-center justify-between px-3 py-2.5 sm:px-4 sm:py-3 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md z-10 shrink-0 min-w-0 min-h-[56px]">
+                                    <button onclick="state.ui.sidebarOpen=!state.ui.sidebarOpen; app.render()" class="md:hidden p-2 rounded-xl hover:bg-slate-800 text-slate-400 shrink-0">
+                                        <i data-lucide="menu" class="w-5 h-5"></i>
+                                    </button>
+                                    <span class="font-semibold text-slate-200 truncate flex-1 px-3 text-sm min-w-0">${currentSession ? currentSession.title : 'New Chat'}</span>
+                                    <button onclick="app.showView('HOME')" class="flex items-center gap-1.5 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl text-sm font-medium transition-colors shrink-0">
+                                        <i data-lucide="home" class="w-4 h-4"></i><span class="hidden sm:inline">Home</span>
+                                    </button>
+                                </div>
+
+                                <!-- Messages -->
+                                <div id="chat-scroll-area" class="flex-1 overflow-y-auto w-full no-scrollbar relative scroll-smooth min-w-0">
+                                    <div class="max-w-3xl mx-auto px-3 py-5 sm:px-4 sm:py-6 space-y-6 min-w-0">
+                                        ${messages.length === 0 ? `
+                                            <div class="flex flex-col items-center justify-center pt-12 sm:pt-20 animate-in fade-in duration-500 px-4 text-center">
+                                                <div class="w-14 h-14 sm:w-16 sm:h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-blue-500/20 mb-4 sm:mb-5 shrink-0">A</div>
+                                                <h2 class="text-xl sm:text-2xl font-bold text-slate-100 mb-2">${chatGreeting}</h2>
+                                                <p class="text-slate-500 text-sm sm:text-base">How can I help you learn today?</p>
+                                            </div>
+                                        ` : ''}
+                                        ${messages.map((msg, index) => `
+                                            <div class="flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300 min-w-0">
+                                                ${msg.role === 'model' ? `<div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0 mr-2 sm:mr-3 mt-1 shadow border-2 border-slate-900">A</div>` : ''}
+                                                <div class="flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} max-w-[92%] sm:max-w-[85%] min-w-0">
+                                                    ${msg.imageData ? `<img src="${msg.imageData}" class="max-h-40 sm:max-h-48 rounded-2xl mb-2 object-cover shadow-md max-w-full">` : ''}
+                                                    <div class="px-4 py-2.5 sm:py-3 text-[14px] sm:text-[15px] leading-relaxed ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm font-medium shadow-md break-words max-w-full' : 'text-slate-100 markdown-content min-w-0'} ${msg.role === 'model' && index === messages.length - 1 && state.chat.isTyping ? 'typing-cursor' : ''}">
+                                                        ${msg.role === 'user' ? (msg.text || '') : app.renderMarkdown(msg.text)}
+                                                    </div>
+                                                    ${msg.role === 'model' && !(index === messages.length - 1 && state.chat.isTyping) ? `
+                                                        <div class="flex items-center gap-3 mt-1.5 ml-1 text-slate-600 shrink-0">
+                                                            <button onclick="app.actions.copyChatMessage(${index})" class="flex items-center gap-1 text-xs font-medium hover:text-slate-300 transition-colors p-1">
+                                                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Copy</span>
+                                                            </button>
+                                                            <button onclick="app.actions.shareChatMessage(${index})" class="flex items-center gap-1 text-xs font-medium hover:text-slate-300 transition-colors p-1">
+                                                                <i data-lucide="share-2" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Share</span>
+                                                            </button>
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                        ${state.chat.loading ? `
+                                            <div class="flex items-start gap-2 sm:gap-3 min-w-0">
+                                                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0 mt-1 shadow border-2 border-slate-900">A</div>
+                                                <div class="flex gap-1.5 items-center px-4 py-3 rounded-2xl rounded-tl-sm bg-slate-800 border border-slate-700">
+                                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0s"></div>
+                                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0.15s"></div>
+                                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay:0.3s"></div>
+                                                </div>
+                                            </div>` : ''}
+                                    </div>
+                                </div>
+
+                                <!-- Input Area -->
+                                <div class="flex-none px-3 pb-4 pt-2 sm:px-4 sm:pb-5 sm:pt-3 bg-slate-950 w-full z-10 shrink-0 min-w-0">
+                                    <div class="max-w-3xl mx-auto w-full min-w-0">
+                                        <!-- Attached file preview -->
+                                        ${attachedFile ? `
+                                        <div class="flex items-center gap-2 mb-2 px-1 min-w-0">
+                                            <div class="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-300 max-w-full min-w-0">
+                                                ${attachedFile.type.startsWith('image/') ? `<img src="${attachedFile.dataUrl}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg object-cover shrink-0">` : `<i data-lucide="file" class="w-4 h-4 text-blue-400 shrink-0"></i>`}
+                                                <span class="truncate max-w-[120px] sm:max-w-[150px] font-medium min-w-0">${attachedFile.name}</span>
+                                                <button onclick="state.chat.attachedFile=null; app.render()" class="text-slate-500 hover:text-rose-400 ml-1 p-1 shrink-0">
+                                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                                </button>
+                                            </div>
+                                        </div>` : ''}
+
+                                        <!-- Input box -->
+                                        <div class="flex flex-col bg-slate-800 border border-slate-700 rounded-2xl shadow-xl overflow-hidden focus-within:border-blue-500 transition-colors min-w-0">
+                                            <textarea id="chat-input" rows="1" placeholder="Message Pawar AI..."
+                                                class="w-full bg-transparent outline-none text-slate-100 text-[14px] sm:text-[15px] resize-none px-4 pt-3 sm:pt-4 pb-2 placeholder-slate-500 font-medium max-h-32 sm:max-h-40"
+                                                style="field-sizing:content; min-height:52px"
+                                                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();app.actions.chat();}"
+                                            ></textarea>
+                                            <!-- Bottom toolbar -->
+                                            <div class="flex items-center justify-between px-2 sm:px-3 pb-2 sm:pb-3 pt-1 shrink-0 min-w-0">
+                                                <div class="flex items-center gap-1 shrink-0">
+                                                    <label class="p-2 rounded-xl hover:bg-slate-700 text-slate-400 hover:text-slate-200 cursor-pointer transition-colors" title="Attach image or file">
+                                                        <input type="file" class="hidden" accept="image/*,application/pdf" onchange="app.actions.chatAttachFile(this)">
+                                                        <i data-lucide="paperclip" class="w-5 h-5"></i>
+                                                    </label>
+                                                    <button id="voice-input-btn" onclick="app.actions.chatVoiceInput()" class="p-2 rounded-xl hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors" title="Voice input">
+                                                        <i data-lucide="mic" class="w-5 h-5"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="flex items-center gap-2 shrink-0">
+                                                    ${state.chat.loading || state.chat.isTyping ? `
+                                                    <button onclick="app.actions.stopChat()" class="p-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl transition-colors" title="Stop">
+                                                        <i data-lucide="square" class="w-4 h-4 fill-current"></i>
+                                                    </button>` : `
+                                                    <button onclick="app.actions.chat()" class="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors shadow-md" title="Send">
+                                                        <i data-lucide="send" class="w-4 h-4"></i>
+                                                    </button>`}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="text-center text-[9px] sm:text-[10px] text-slate-600 mt-2 font-medium">Pawar AI can make mistakes. Verify important info.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+
+                notes() {
+                    let resultHtml = '';
+
+                    if (state.notes.content || state.notes.isTyping) {
+                        resultHtml = `
+                            <div id="notes-print-area" class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden mb-8 sm:mb-12 min-w-0">
+                                <div class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-10 no-print flex-wrap gap-2">
+                                    <h3 class="font-bold text-slate-800 dark:text-white truncate flex items-center gap-2 min-w-0 text-sm sm:text-base">
+                                        <i data-lucide="file-text" class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0"></i>
+                                        <span class="truncate">${state.notes.topic}</span>
+                                    </h3>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <button onclick="app.actions.copyNotes()" class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/40 hover:bg-purple-200 dark:hover:bg-purple-900/60 uppercase tracking-wider rounded-lg sm:rounded-xl transition-colors shrink-0">
+                                            <i data-lucide="copy" class="w-3 h-3 sm:w-4 sm:h-4"></i>
+                                            <span id="copy-btn-text" class="hidden sm:inline">Copy</span>
+                                        </button>
+                                        <button onclick="app.actions.downloadTextPDF()" class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 uppercase tracking-wider rounded-lg sm:rounded-xl transition-colors shadow-md shrink-0">
+                                            <i data-lucide="printer" class="w-3 h-3 sm:w-4 sm:h-4"></i>
+                                            <span class="hidden sm:inline">Print/PDF</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="notes-content" class="p-4 sm:p-8 md:p-12 bg-white dark:bg-slate-900 min-h-[300px] markdown-content dark:text-slate-200 min-w-0 overflow-x-hidden ${state.notes.isTyping ? 'typing-cursor' : ''}">
+                                    ${app.renderMarkdown(state.notes.content)}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    let historyHtml = '';
+                    if (state.notes.history.length > 0 && !state.notes.content && !state.notes.loading) {
+                        historyHtml = `
+                            <div class="mt-8 sm:mt-12 no-print animate-in fade-in duration-300 min-w-0">
+                                <div class="flex justify-between items-center mb-4 sm:mb-6">
+                                    <h3 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Saved Notes</h3>
+                                    <button onclick="app.actions.clearNotesHistory()" class="text-xs sm:text-sm text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1.5 transition-colors">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> <span class="hidden sm:inline">Clear All</span>
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 min-w-0">
+                                    ${state.notes.history.map((note, index) => `
+                                        <div class="p-4 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer hover:border-purple-500 transition-colors shadow-sm hover:shadow-md group min-w-0" onclick="app.actions.loadSavedNote(${index})">
+                                            <h4 class="font-bold text-base sm:text-lg text-slate-800 dark:text-white truncate flex items-center gap-2 mb-1 sm:mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                                <i data-lucide="file-text" class="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 shrink-0"></i> <span class="truncate">${note.topic}</span>
+                                            </h4>
+                                            <p class="text-[10px] sm:text-xs font-semibold text-slate-400 flex items-center gap-1.5 uppercase tracking-wider truncate">
+                                                <i data-lucide="clock" class="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0"></i> ${note.date}
+                                            </p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 min-w-0">
+                            <button onclick="app.showView('HOME')" class="mb-4 sm:mb-6 flex items-center text-slate-500 hover:text-slate-900 dark:hover:text-white font-semibold no-print transition-colors text-sm sm:text-base"><i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Back Home</button>
+                            
+                            <div class="bg-white dark:bg-slate-900 p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm mb-6 sm:mb-10 no-print min-w-0">
+                                <h2 class="text-2xl sm:text-3xl font-extrabold mb-4 sm:mb-6 text-slate-900 dark:text-white tracking-tight">Smart Note Maker</h2>
+                                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 min-w-0">
+                                    <input id="notes-topic" type="text" placeholder="Enter Topic (e.g. Photosynthesis)..." class="flex-1 p-4 sm:p-5 rounded-xl sm:rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 outline-none focus:border-purple-500 transition-colors dark:text-white font-medium min-w-0 text-sm sm:text-base" value="${state.notes.topic}">
+                                    <button onclick="app.actions.notes()" class="px-6 sm:px-10 py-4 sm:py-5 bg-purple-600 text-white rounded-xl sm:rounded-2xl font-bold shadow-md hover:bg-purple-700 sm:hover:-translate-y-0.5 transition-all shrink-0 text-sm sm:text-base">GENERATE</button>
+                                </div>
+                            </div>
+                            
+                            ${state.notes.loading ? `
+                                <div class="text-center py-12 sm:py-16 animate-in fade-in duration-300 no-print">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
+                                    <p class="font-bold text-purple-600 uppercase tracking-widest text-xs sm:text-sm">Generating Premium Notes...</p>
+                                </div>
+                            ` : ''}
+                            
+                            <div id="notes-result-container" class="min-w-0">${resultHtml}</div>
+                            ${historyHtml}
+                        </div>
+                    `;
+                },
+
+                quiz() {
+                    const q = state.quiz;
+                    if(q.phase === 'config') return `
+                        <div class="w-full max-w-xl mx-auto px-4 sm:px-6 py-8 md:py-12 animate-in fade-in duration-300 flex-1 min-w-0">
+                            <button onclick="app.showView('HOME')" class="mb-4 sm:mb-6 flex items-center text-slate-500 font-bold hover:text-slate-900 dark:hover:text-white transition-colors text-sm sm:text-base"><i data-lucide="arrow-left" class="w-4 h-4 mr-1.5 sm:mr-2"></i> Back</button>
+                            
+                            <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm min-w-0">
+                                <h2 class="text-2xl sm:text-3xl font-black mb-6 sm:mb-8 text-slate-900 dark:text-white tracking-tight">AI Mock Test</h2>
+                                <div class="space-y-4 sm:space-y-5 min-w-0 w-full">
+                                    <div class="w-full min-w-0">
+                                        <label class="block text-[10px] sm:text-xs font-bold text-slate-500 mb-1.5 sm:mb-2 tracking-widest uppercase ml-1">Exam Type</label>
+                                        <select id="quiz-exam" class="custom-select w-full p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 outline-none font-semibold dark:text-white text-sm sm:text-base min-w-0">
+                                            <option>UPSC CSE</option><option>JEE Mains</option><option>NEET</option><option>SSC CGL</option><option>General Knowledge</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="w-full min-w-0">
+                                        <label class="block text-[10px] sm:text-xs font-bold text-slate-500 mb-1.5 sm:mb-2 tracking-widest uppercase ml-1">Topic</label>
+                                        <input id="quiz-topic" type="text" placeholder="e.g. Ancient History" class="w-full p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 outline-none font-semibold dark:text-white focus:border-rose-500 transition-colors text-sm sm:text-base min-w-0">
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 min-w-0 w-full">
+                                        <div class="min-w-0">
+                                            <label class="block text-[10px] sm:text-xs font-bold text-slate-500 mb-1.5 sm:mb-2 tracking-widest uppercase ml-1">Difficulty</label>
+                                            <select id="quiz-difficulty" class="custom-select w-full p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 outline-none font-semibold dark:text-white text-sm sm:text-base min-w-0">
+                                                <option>Easy</option><option selected>Medium</option><option>Hard</option>
+                                            </select>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <label class="block text-[10px] sm:text-xs font-bold text-slate-500 mb-1.5 sm:mb-2 tracking-widest uppercase ml-1">Questions</label>
+                                            <select id="quiz-count" class="custom-select w-full p-3.5 sm:p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 outline-none font-semibold dark:text-white text-sm sm:text-base min-w-0">
+                                                <option value="5">5</option><option value="10">10</option><option value="25">25</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <button onclick="app.actions.quizStart()" class="w-full py-4 sm:py-5 bg-rose-600 text-white rounded-xl sm:rounded-2xl font-black mt-4 sm:mt-6 hover:bg-rose-700 transition-colors shadow-lg shadow-rose-500/20 tracking-widest uppercase text-sm sm:text-base flex justify-center">Start Assessment</button>
+                                </div>
+                            </div>
+                            ${q.loading ? '<p class="text-center mt-6 sm:mt-8 text-rose-500 font-bold uppercase tracking-widest animate-pulse text-xs sm:text-sm px-4">Generating Questions...</p>' : ''}
+                        </div>
+                    `;
+                    if(q.phase === 'active') {
+                        const question = q.questions[q.current];
+                        return `
+                            <div class="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-in fade-in duration-300 flex-1 min-w-0">
+                                <button onclick="state.quiz.phase='config'; app.render()" class="mb-4 sm:mb-6 text-slate-500 text-xs sm:text-sm font-bold hover:text-rose-600 transition-colors flex items-center uppercase tracking-widest"><i data-lucide="arrow-left" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5"></i> Exit Test</button>
+                                <div class="bg-white dark:bg-slate-900 p-5 sm:p-8 md:p-12 rounded-2xl sm:rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm min-w-0">
+                                    <div class="flex justify-between items-center text-xs sm:text-sm font-bold mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-slate-100 dark:border-slate-800 min-w-0">
+                                        <span class="text-slate-400 tracking-widest uppercase shrink-0">Q ${q.current + 1} / ${q.questions.length}</span>
+                                        <span class="bg-rose-100 dark:bg-rose-900/30 text-rose-600 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full tracking-widest shrink-0">SCORE: ${q.score}</span>
+                                    </div>
+                                    <h3 class="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-10 leading-snug text-slate-900 dark:text-white break-words">${question.question}</h3>
+                                    <div class="space-y-3 sm:space-y-4 min-w-0">
+                                        ${question.options.map((opt, i) => `<button onclick="app.actions.quizAnswer(${i})" class="w-full text-left p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 ${q.answers[q.current]===i ? 'bg-rose-50 border-rose-500 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-rose-300'} transition-all font-semibold text-sm sm:text-lg min-w-0 break-words">${opt}</button>`).join('')}
+                                    </div>
+                                    
+                                    <div class="mt-8 sm:mt-12 flex justify-between gap-3 min-w-0">
+                                        <button onclick="app.actions.quizPrev()" class="px-5 sm:px-8 py-3 sm:py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl sm:rounded-2xl font-black tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-xs sm:text-sm ${q.current === 0 ? 'invisible' : ''}">BACK</button>
+                                        <button onclick="app.actions.quizNext()" class="px-6 sm:px-10 py-3 sm:py-4 bg-rose-600 text-white rounded-xl sm:rounded-2xl font-black tracking-widest shadow-xl shadow-rose-500/20 hover:bg-rose-700 transition-colors text-xs sm:text-sm">${q.current === q.questions.length - 1 ? 'SUBMIT' : 'NEXT'}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if(q.phase === 'review') {
+                        return `
+                            <div class="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-16 animate-in fade-in duration-500 flex-1 min-w-0">
+                                <div class="text-center mb-10 sm:mb-16 min-w-0">
+                                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-black mb-4 sm:mb-6 text-slate-900 dark:text-white tracking-tighter break-words">TEST COMPLETE</h2>
+                                    <p class="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-10 font-bold text-slate-500">Final Score: <span class="text-rose-600 font-black text-2xl sm:text-3xl md:text-4xl ml-2">${q.score} / ${q.questions.length}</span></p>
+                                    <button onclick="state.quiz.phase='config'; app.render()" class="px-8 sm:px-12 py-4 sm:py-5 bg-blue-600 text-white rounded-xl sm:rounded-2xl font-black shadow-xl hover:bg-blue-700 uppercase tracking-widest transition-transform sm:hover:scale-105 text-sm sm:text-base">Take Another</button>
+                                </div>
+
+                                <div class="space-y-6 sm:space-y-8 min-w-0 w-full">
+                                    ${q.questions.map((question, index) => {
+                                        const userAnswer = q.answers[index];
+                                        const isCorrect = userAnswer === question.correctAnswerIndex;
+                                        return `
+                                            <div class="bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-800 border-l-4 sm:border-l-8 ${isCorrect ? 'border-l-emerald-500' : 'border-l-rose-500'} shadow-sm min-w-0">
+                                                <div class="flex gap-3 sm:gap-4 mb-4 sm:mb-6 min-w-0">
+                                                    <span class="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full font-black text-white text-sm sm:text-base ${isCorrect ? 'bg-emerald-500' : 'bg-rose-500'}">${index + 1}</span>
+                                                    <h3 class="text-base sm:text-lg md:text-xl font-bold pt-1 text-slate-900 dark:text-white leading-snug break-words min-w-0">${question.question}</h3>
+                                                </div>
+                                                <div class="space-y-2 sm:space-y-3 mb-4 sm:mb-6 pl-11 sm:pl-14 min-w-0">
+                                                    ${question.options.map((opt, optIdx) => {
+                                                        let style = "bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400";
+                                                        if (optIdx === question.correctAnswerIndex) style = "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-500 text-emerald-800 dark:text-emerald-400 font-bold";
+                                                        else if (optIdx === userAnswer) style = "bg-rose-50 dark:bg-rose-900/30 border-rose-500 text-rose-800 dark:text-rose-400";
+                                                        return `<div class="p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 ${style} font-medium text-xs sm:text-sm break-words min-w-0">${opt}</div>`;
+                                                    }).join('')}
+                                                </div>
+                                                <div class="ml-11 sm:ml-14 p-4 sm:p-5 bg-blue-50 dark:bg-blue-900/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-medium text-blue-900 dark:text-blue-200 leading-relaxed border border-blue-100 dark:border-blue-800/50 min-w-0 break-words">
+                                                    <strong class="text-blue-700 dark:text-blue-400 font-black uppercase tracking-wider block mb-1.5 sm:mb-2">Explanation:</strong> ${question.explanation}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            },
+
+            actions: {
+                
+                simpleLogin() {
+                    const userBox = document.getElementById('demo-username') || document.getElementById('modal-username');
+                    
+                    const username = userBox ? userBox.value.trim() : '';
+
+                    if (!username) {
+                        alert("Please enter a username to test the demo.");
+                        if(userBox) userBox.focus();
+                        return;
+                    }
+
+                    state.user = {
+                        name: username,
+                        email: username.toLowerCase().replace(/\s+/g, '') + "@college-demo.edu",
+                        picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=2563eb&color=fff&bold=true`
+                    };
+                    
+                    localStorage.setItem('pawar_user', JSON.stringify(state.user));
+                    state.ui.loginModal = false;
+                    document.getElementById('login-modal-overlay')?.remove();
+                    
+                    app.loadData();
+                    app.render();
+                },
+
+                async logout() {
+                    state.user = null;
+                    localStorage.removeItem('pawar_user');
+                    state.ui.profileOpen = false;
+                    state.currentView = 'HOME'; 
+                    app.loadData(); 
+                    app.render(); 
+                },
+
+                stopChat() {
+                    state.chat.loading = false;
+                    state.chat.isTyping = false;
+                    const session = state.chat.sessions.find(s => s.id === state.chat.currentId);
+                    if (session && session.messages.length > 0) {
+                        const last = session.messages[session.messages.length - 1];
+                        if (last.role === 'model' && last.text === '') {
+                            session.messages.pop();
+                        }
+                    }
+                    app.saveData();
+                    app.render();
+                },
+
+                newChat(doRender = true) {
+                    const newId = 'chat_' + Date.now();
+                    state.chat.sessions.unshift({
+                        id: newId,
+                        title: 'New Chat',
+                        messages:[]
+                    });
+                    state.chat.currentId = newId;
+                    app.saveData();
+                    if(doRender) app.render();
+                },
+
+                switchChat(id) {
+                    state.chat.currentId = id;
+                    state.ui.sidebarOpen = false; 
+                    app.render();
+                },
+
+                deleteChat(id) {
+                    if(!confirm("Delete this chat?")) return;
+                    state.chat.sessions = state.chat.sessions.filter(s => s.id !== id);
+                    if(state.chat.sessions.length === 0) app.actions.newChat(false);
+                    else if(state.chat.currentId === id) state.chat.currentId = state.chat.sessions[0].id;
+                    app.saveData();
+                    app.render();
+                },
+
+                copyChatMessage(index) {
+                    const session = state.chat.sessions.find(s => s.id === state.chat.currentId);
+                    if (session && session.messages[index]) {
+                        navigator.clipboard.writeText(session.messages[index].text);
+                        alert("Message copied to clipboard!");
+                    }
+                },
+                
+                async shareChatMessage(index) {
+                    const session = state.chat.sessions.find(s => s.id === state.chat.currentId);
+                    if (session && session.messages[index]) {
+                        const text = session.messages[index].text;
+                        if (navigator.share) {
+                            try {
+                                await navigator.share({
+                                    title: 'Pawar AI Chat',
+                                    text: text
+                                });
+                            } catch (err) {
+                                console.log('Share error:', err);
+                            }
+                        } else {
+                            navigator.clipboard.writeText(text);
+                            alert("Copied to clipboard (Share not supported on this browser)");
+                        }
+                    }
+                },
+
+                chatAttachFile(input) {
+                    const file = input.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        state.chat.attachedFile = { name: file.name, type: file.type, dataUrl: e.target.result, base64: e.target.result.split(',')[1], mimeType: file.type };
+                        app.render();
+                    };
+                    reader.readAsDataURL(file);
+                },
+
+                chatVoiceInput() {
+                    const btn = document.getElementById('voice-input-btn');
+                    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                        alert('Voice input not supported in this browser. Try Chrome.');
+                        return;
+                    }
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'en-IN';
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 1;
+                    if (btn) { btn.innerHTML = '<i data-lucide="mic-off" class="w-4 h-4 text-red-400"></i>'; if(typeof lucide !== 'undefined') lucide.createIcons(); }
+                    recognition.start();
+                    recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript;
+                        const input = document.getElementById('chat-input');
+                        if (input) input.value = (input.value ? input.value + ' ' : '') + transcript;
+                        if (btn) { btn.innerHTML = '<i data-lucide="mic" class="w-4 h-4"></i>'; if(typeof lucide !== 'undefined') lucide.createIcons(); }
+                    };
+                    recognition.onerror = () => { if (btn) { btn.innerHTML = '<i data-lucide="mic" class="w-4 h-4"></i>'; if(typeof lucide !== 'undefined') lucide.createIcons(); } };
+                    recognition.onend = () => { if (btn) { btn.innerHTML = '<i data-lucide="mic" class="w-4 h-4"></i>'; if(typeof lucide !== 'undefined') lucide.createIcons(); } };
+                },
+
+                async chat() {
+                    const input = document.getElementById('chat-input');
+                    const text = input ? input.value.trim() : '';
+                    const attached = state.chat.attachedFile;
+                    if ((!text && !attached) || state.chat.loading || state.chat.isTyping) return;
+                    
+                    const session = state.chat.sessions.find(s => s.id === state.chat.currentId);
+                    
+                    if (session.messages.length === 0) {
+                        session.title = (text || (attached ? attached.name : 'Image')).substring(0, 30) + ((text.length > 30) ? '...' : '');
+                    }
+
+                    const userMsg = { role: 'user', text: text || '', imageData: attached ? attached.dataUrl : null };
+                    session.messages.push(userMsg);
+                    if (input) input.value = '';
+                    const fileToSend = attached;
+                    state.chat.attachedFile = null;
+                    state.chat.loading = true;
+                    app.render();
+                    app.scrollToBottom('chat-scroll-area');
+
+                    const systemInstruction = { role: 'user', parts:[{ text: 'You are Pawar AI, an intelligent, helpful study assistant. Format your responses nicely with markdown. Answer clearly and concisely.' }] };
+                    const systemAck = { role: 'model', parts:[{ text: 'Understood.' }] };
+
+                    const historyMessages = session.messages.map((m, i) => {
+                        const parts = [];
+                        if (m.imageData && i === session.messages.length - 1 && fileToSend) {
+                            parts.push({ inlineData: { mimeType: fileToSend.mimeType, data: fileToSend.base64 } });
+                        }
+                        if (m.text) parts.push({ text: m.text });
+                        if (!parts.length) parts.push({ text: '' });
+                        return { role: m.role === 'user' ? 'user' : 'model', parts };
+                    });
+
+                    const fullMessages = [systemInstruction, systemAck, ...historyMessages];
+                    
+                    const response = await app.callBackendChat(fullMessages, 'chat');
+                    
+                    state.chat.loading = false;
+                    state.chat.isTyping = true;
+                    session.messages.push({ role: 'model', text: '' });
+                    app.render();
+                    
+                    await app.utils.typewriter(response, (chunk) => {
+                        const lastMsg = session.messages[session.messages.length - 1];
+                        lastMsg.text += chunk;
+                        app.render();
+                        app.scrollToBottom('chat-scroll-area');
+                    });
+                    state.chat.isTyping = false;
+                    app.saveData();
+                    app.render();
+                },
+
+                async notes() {
+                    const topic = document.getElementById('notes-topic').value;
+                    if(!topic) return;
+
+                    state.notes.loading = true;
+                    state.notes.topic = topic;
+                    state.notes.content = '';
+                    app.render();
+                    
+                    const response = await app.callBackend("Create detailed study notes about: " + topic + ". Use Markdown formatting. Use tables for comparisons where appropriate.", 'notes');
+                    
+                    if (!response || response.startsWith("Connection Failed") || response.startsWith("Server Error") || response.startsWith("Google Error") || response.startsWith("Unknown Error")) {
+                        state.notes.loading = false;
+                        state.notes.content = "⚠️ " + (response || "AI failed to respond. Please try again.");
+                        app.render();
+                        return;
+                    }
+                    
+                    state.notes.loading = false;
+                    state.notes.isTyping = true;
+                    app.render();
+                    
+                    await app.utils.typewriter(response, (chunk) => {
+                        state.notes.content += chunk;
+                        app.render();
+                    });
+                    
+                    state.notes.history.unshift({
+                        topic: state.notes.topic,
+                        content: state.notes.content,
+                        date: new Date().toLocaleString()
+                    });
+                    app.saveData();
+
+                    state.notes.isTyping = false;
+                    app.render();
+                },
+
+                loadSavedNote(index) {
+                    const note = state.notes.history[index];
+                    state.notes.topic = note.topic;
+                    state.notes.content = note.content;
+                    app.render();
+                },
+
+                clearNotesHistory() {
+                    if(confirm("Are you sure you want to clear your saved notes?")) {
+                        state.notes.history =[];
+                        app.saveData();
+                        app.render();
+                    }
+                },
+                
+                copyNotes() {
+                    if (state.notes.content) {
+                        navigator.clipboard.writeText(state.notes.content);
+                        const btn = document.getElementById('copy-btn-text');
+                        if (btn) btn.textContent = 'Copied!';
+                        setTimeout(() => { if (btn) btn.textContent = 'Copy'; }, 2000);
+                    }
+                },
+
+                downloadTextPDF() {
+                    const content = document.getElementById('notes-content').innerHTML;
+                    if (!content) return;
+                    const title = state.notes.topic ? state.notes.topic : "Study Notes";
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                    const doc = iframe.contentWindow.document;
+                    doc.open();
+                    doc.write(`
+                        <html>
+                        <head>
+                            <title>${title}</title>
+                            <style>
+                                body { font-family: 'Arial', sans-serif; color: #000; background: #fff; padding: 20px; line-height: 1.6; }
+                                h1 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; font-size: 24px; font-weight: bold; }
+                                h2 { color: #2563eb; margin-top: 20px; font-size: 20px; font-weight: bold; }
+                                h3 { color: #334155; font-size: 18px; font-weight: bold; }
+                                p { margin-bottom: 12px; font-size: 16px; color: #1e293b; }
+                                ul, ol { margin-left: 24px; margin-bottom: 16px; font-size: 16px; }
+                                li { margin-bottom: 6px; }
+                                b, strong { color: #000; font-weight: bold; }
+                                table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; font-size: 14px; }
+                                th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; }
+                                th { background-color: #f1f5f9; color: #0f172a; font-weight: bold; }
+                                td { background-color: #fff; color: #334155; }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>${title}</h1>
+                            ${content}
+                        </body>
+                        </html>
+                    `);
+                    doc.close();
+                    
+                    setTimeout(() => { 
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print(); 
+                        setTimeout(() => document.body.removeChild(iframe), 1000);
+                    }, 500);
+                },
+
+                async quizStart() {
+                    const topic = document.getElementById('quiz-topic').value;
+                    const exam = document.getElementById('quiz-exam').value;
+                    const difficulty = document.getElementById('quiz-difficulty').value;
+                    const count = document.getElementById('quiz-count').value;
+                    if(!topic) return alert("Please enter a topic.");
+
+                    state.quiz.loading = true; app.render();
+                    const prompt = `Generate ${count} MCQs for ${exam} on ${topic}. Difficulty: ${difficulty}. Return raw JSON array only:[{"question":"...","options":["A","B","C","D"],"correctAnswerIndex":0, "explanation":"..."}]`;
+                    const res = await app.callBackend(prompt, 'quiz');
+                    try {
+                        const jsonStr = res.substring(res.indexOf('['), res.lastIndexOf(']') + 1);
+                        state.quiz.questions = JSON.parse(jsonStr);
+                        state.quiz.phase = 'active'; state.quiz.current = 0; state.quiz.score = 0; state.quiz.answers =[];
+                    } catch(e) { alert("Error generating quiz. Please try a different topic."); }
+                    state.quiz.loading = false; app.render();
+                },
+                quizAnswer(idx) { state.quiz.answers[state.quiz.current] = idx; app.render(); },
+                quizNext() {
+                    const q = state.quiz;
+                    if(q.current < q.questions.length - 1) { q.current++; } 
+                    else { 
+                        q.score = q.questions.reduce((acc, question, index) => acc + (q.answers[index] === question.correctAnswerIndex ? 1 : 0), 0);
+                        q.phase = 'review';
+                    }
+                    app.render();
+                },
+                quizPrev() { if (state.quiz.current > 0) { state.quiz.current--; app.render(); } }
+            },
+
+            utils: {
+                typewriter(text, onUpdate) {
+                    return new Promise(resolve => {
+                        let i = 0; const speed = 8;
+                        const interval = setInterval(() => {
+                            const chunk = text.substring(i, i + 4); onUpdate(chunk); i += 4;
+                            if (i >= text.length) { clearInterval(interval); resolve(); }
+                        }, speed);
+                    });
+                }
+            },
+
+            scrollToBottom(id) { const el = document.getElementById(id); if(el) el.scrollTop = el.scrollHeight; },
+            
+            renderMarkdown(text) {
+                if(!text) return '';
+                if(typeof marked !== 'undefined') {
+                    marked.setOptions({ breaks: true, gfm: true });
+                    return marked.parse(text);
+                }
+                return text;
+            }
+        };
+        window.app = app;
+        app.init();
+    </script>
+</body>
+</html>
